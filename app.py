@@ -28,16 +28,28 @@ def get_hit_count():
       retries -= 1
       time.sleep(0.5)
 
-
-@app.route('/')
-def hello():
-  count = get_hit_count()
-  return 'Hello World! I have been seen {} times.\n'.format(count)
-
 @app.route('/isPrime/<number>')
-def test(number):
+def primality_test(number):
   is_prime_res = is_prime(int(number))
   if is_prime_res:
-    return '{} is prime'.format(number)
+    retries = 5
+    while True:
+      try:
+        cache.rpush('primes', number)
+        return '{} is prime'.format(number)
+      except redis.exceptions.ConnectionError as exc:
+        if retries == 0:
+          raise exc
+        retries -= 1
+        time.sleep(0.5)
+
+    #cache.rpushx('primes', number)
+    #return '{} is prime'.format(number)
   else:
     return '{} is not prime'.format(number)
+
+
+@app.route('/primesStored')
+def prime_numbers():
+  prime_number_list = cache.lrange('primes', 0, 100)
+  return '=>{}'.format(cache.llen('primes'))
