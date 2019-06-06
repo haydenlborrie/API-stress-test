@@ -1,3 +1,4 @@
+
 import time
 import redis
 from flask import Flask
@@ -11,9 +12,11 @@ def is_prime(n):
   elif n % 2 == 0 or n % 3 == 0 :
     return False
 
-  for i in range(5, n, 6) :
+  i = 5	
+  while (i * i) <= n :
     if n % i == 0 or n % (i+2) == 0 :
       return False
+    i += 6
 
   return True
 
@@ -35,21 +38,23 @@ def primality_test(number):
     retries = 5
     while True:
       try:
-        cache.rpush('primes', number)
+        cache.lpush('primes', number)
         return '{} is prime'.format(number)
       except redis.exceptions.ConnectionError as exc:
         if retries == 0:
           raise exc
         retries -= 1
         time.sleep(0.5)
-
-    #cache.rpushx('primes', number)
-    #return '{} is prime'.format(number)
   else:
     return '{} is not prime'.format(number)
 
 
 @app.route('/primesStored')
 def prime_numbers():
-  prime_number_list = cache.lrange('primes', 0, 100)
-  return '=>{}'.format(cache.llen('primes'))
+  output_string = 'Prime Numbers: <br>'
+  prime_number_list = cache.lrange('primes', 0, -1)
+
+  for number in prime_number_list:
+    output_string += number.decode('utf-8') + '<br>\n'
+
+  return output_string
