@@ -20,17 +20,6 @@ def is_prime(n):
 
   return True
 
-def get_hit_count():
-  retries = 5
-  while True:
-    try:
-      return cache.incr('hits')
-    except redis.exceptions.ConnectionError as exc:
-      if retries == 0:
-        raise exc
-      retries -= 1
-      time.sleep(0.5)
-
 @app.route('/isPrime/<number>')
 def primality_test(number):
   is_prime_res = is_prime(int(number))
