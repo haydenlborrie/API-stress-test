@@ -58,3 +58,16 @@ def prime_numbers():
     output_string += number.decode('utf-8') + '<br>\n'
 
   return output_string
+
+@app.route('/test')
+def test():
+  for i in range(-13, 20):
+    primality_test(i)
+
+  return prime_numbers()
+
+@app.route('/clearCache')
+def clear_cache():
+  cache.flushall()
+
+  return 'cache cleared'
